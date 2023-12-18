@@ -24,6 +24,18 @@ def get_res(content):
     return response
 
 
+def get_sum(content):
+    messages = [{
+        "role": "user",
+        "content": "你将被提供一个会议纪要文本，请利用这个会议纪要完成后续任务。\n"
+                   f"会议纪要：\n{content}\n"
+                   "任务：\n总结这个会议纪要，确保不丢失会议纪要中的重要信息。\n"
+                   "会议纪要总结："
+    }]
+    response = llm(messages)
+    return response
+
+
 def getDocText(fileName):
     doc = Document(fileName)
     TextList = []
