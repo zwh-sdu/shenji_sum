@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import argparse
 import sys
 import json
 from PyQt5.QtWidgets import QApplication, QMainWindow
@@ -7,6 +7,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 import re
 
 from merge_node_and_link import *
+
 
 class HtmlWindow(QMainWindow):
     def __init__(self, nodes, links):
@@ -150,15 +151,21 @@ class HtmlWindow(QMainWindow):
 
 
 if __name__ == '__main__':
-    d_threshold = 5
-    file_dir = r'F:\宝贝派的活儿\知识图谱\shenji_sum\data\llm_output'
+
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("--file_dir", default="./data/llm_output", type=str, help="大模型抽取结果的 txt 所在目录")
+    parser.add_argument("--d_threshold", default=5, type=int, help="编辑距离阈值")
+    args = parser.parse_args()
+
+    d_threshold = args.d_threshold
+    file_dir = args.file_dir
     all_files = get_all_files_in_folder(file_dir)
     print("file num", len(all_files))
 
     all_nodes = []
     all_links = []
     for file in all_files:
-        nodes,links = get_nodes_and_lines(file)
+        nodes, links = get_nodes_and_lines(file)
         all_nodes += nodes
         all_links += links
 

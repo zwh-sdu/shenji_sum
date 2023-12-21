@@ -1,16 +1,17 @@
 import re
 import os
 
+
 def get_nodes_and_lines(file_path):
     data = []
-    with open(file_path, 'r', encoding = 'utf-8') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         data = f.readlines()
         data = list(map(lambda x: x.strip(), data))
 
     nodes = [
-                {"id": data[0], "group": 1}, # 会议时间
-                {"id": data[1], "group": 2} # 会议名称
-            ]
+        {"id": data[0], "group": 1},  # 会议时间
+        {"id": data[1], "group": 2}  # 会议名称
+    ]
     links = [{"source": data[0], "target": data[1]}]
 
     # 事件
@@ -26,7 +27,8 @@ def get_nodes_and_lines(file_path):
 
     # nodes [{'id': '会议时间：2022年4月15日', 'group': 1}, ...]
     # links [{'source': '会议名称：中共XX市XX区XX局党组会', 'target': '会议听取内审办关于修订、制定区XX局内部审计相关工作办法的情况汇报。'}, ...]
-    return nodes,links
+    return nodes, links
+
 
 # file_path = './data/output.txt'
 # nodes, links = get_nodes_and_lines(file_path)
@@ -46,15 +48,16 @@ def edit_distance(str1, str2):
     # 数字不算
     str1 = str1.rstrip('0123456789')
     str2 = str2.rstrip('0123456789')
-    matrix = [[i+j for j in range(len(str2) + 1)] for i in range(len(str1) + 1)]
-    for i in range(1,len(str1)+1):
-        for j in range(1,len(str2)+1):
-            if str1[i-1] == str2[j-1]:
+    matrix = [[i + j for j in range(len(str2) + 1)] for i in range(len(str1) + 1)]
+    for i in range(1, len(str1) + 1):
+        for j in range(1, len(str2) + 1):
+            if str1[i - 1] == str2[j - 1]:
                 d = 0
             else:
                 d = 1
-            matrix[i][j] = min(matrix[i-1][j]+1,matrix[i][j-1]+1,matrix[i-1][j-1]+d)
+            matrix[i][j] = min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + d)
     return matrix[len(str1)][len(str2)]
+
 
 # print(edit_distance('abd', 'abhh'))
 
@@ -71,29 +74,32 @@ def get_all_files_in_folder(folder_path):
             file_names.append(os.path.join(root, file))
     return file_names
 
+
 def merge(all_nodes, all_links, d_threshold):
     node_mapping = {}
     node_set = []
     for node in all_nodes:
         node_id = node['id']
 
-        add_flag = 1 # 判断是否添加节点
-        for i in range(len(node_set)): # 找是否有相似或者相同的节点
-            if node_id == node_set[i]['id']: # 有相同节点
+        add_flag = 1  # 判断是否添加节点
+        for i in range(len(node_set)):  # 找是否有相似或者相同的节点
+            if node_id == node_set[i]['id']:  # 有相同节点
                 # node_mapping[node_id] = node_set[i]['id']
                 add_flag = 0
                 break
 
-            elif node_set[i]['group'] != 1 and edit_distance(node_id, node_set[i]['id']) < d_threshold: # 有相似节点（时间不算编辑距离）
+            elif node_set[i]['group'] != 1 and edit_distance(node_id,
+                                                             node_set[i]['id']) < d_threshold:  # 有相似节点（时间不算编辑距离）
                 # if len(node_set[i]['id']) > len(node_id): # 保留短的那个,保留node_id
                 #     node_mapping[node_set[i]['id']] = node_id # 这样直接替换会出问题，因为node_set[i]['id']之前可能被用于被替换别的字符，不能就这样不要node_set[i]['id']了
                 #     node_set[i]['id'] = node_id
                 # else: # 保留node_set[i]['id']
                 #     node_mapping[node_id] = node_set[i]['id']
-                node_mapping[node_id] = node_set[i]['id'] # 避免修改node_set中已有的数据，只修改后来要加入node_set的数据 以避免a->b b->c的发生，只能a->b c->b
+                node_mapping[node_id] = node_set[i][
+                    'id']  # 避免修改node_set中已有的数据，只修改后来要加入node_set的数据 以避免a->b b->c的发生，只能a->b c->b
                 add_flag = 0
                 break
-        if add_flag: # 没有相似节点，添加至
+        if add_flag:  # 没有相似节点，添加至
             node_set.append(node)
 
     link_set = []
@@ -104,7 +110,7 @@ def merge(all_nodes, all_links, d_threshold):
         if link['target'] in node_mapping.keys():
             link['target'] = node_mapping[link['target']]
 
-        add_flag = 1 # 判断是否添加边
+        add_flag = 1  # 判断是否添加边
         for i in range(len(link_set)):
             if link['source'] == link_set[i]['source'] and link['target'] == link_set[i]['target']:
                 add_flag = 0
@@ -112,8 +118,9 @@ def merge(all_nodes, all_links, d_threshold):
 
         if add_flag:
             link_set.append(link)
-    
+
     return node_set, link_set, node_mapping
+
 
 if __name__ == "__main__":
     print(edit_distance('拨付武汉路小学房租经费', '拨付武汉路小学房租经费'))
