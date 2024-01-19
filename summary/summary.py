@@ -7,11 +7,20 @@ llm = Baichuan("http://10.102.33.19:1707/")
 
 
 def get_sum(content):
+    # v1
     messages = [{
         "role": "user",
         "content": "你将被提供一个会议纪要文本，请利用这个会议纪要完成后续任务。\n"
                    f"会议纪要：\n{content}\n"
                    "任务：\n总结这个会议纪要，确保不丢失会议纪要中的重要信息。\n"
+                   "会议纪要总结："
+    }]
+    # v2 更凝练的版本
+    messages = [{
+        "role": "user",
+        "content": "你将被提供一个会议纪要文本，请利用这个会议纪要完成后续任务。\n"
+                   f"会议纪要：\n{content}\n"
+                   "任务：\n尽可能简洁凝练地总结这个会议纪要，同时不要丢失会议纪要中的重要信息。\n"
                    "会议纪要总结："
     }]
     response = llm(messages)
